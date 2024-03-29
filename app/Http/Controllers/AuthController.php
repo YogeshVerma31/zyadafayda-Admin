@@ -6,6 +6,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class AuthController extends Controller
 {
@@ -14,6 +15,30 @@ class AuthController extends Controller
     // {
     //     $this->middleware('auth:api', ['except' => ['login']]);
     // }
+
+    public function loginAdmin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ], [
+            'email.required' => 'The email field is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'The password field is required.',
+        ]);
+
+        $credentials = $request->only('email', 'password');
+        if (Auth::attempt($credentials)) {
+            $request->session()->put('user', $credentials);
+                Session::flash('success', 'Login Successfully');
+            return redirect()->intended('/');
+
+        } else {
+            return redirect()->back()->withErrors(['email' => 'These credentials do not match our records.']);
+        }
+    }
+
+
     public function register(Request $request)
     {
         try {
